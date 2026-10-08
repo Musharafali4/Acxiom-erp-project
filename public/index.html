@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcxiomCRM - Enterprise Customer Relationship Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ========================================== -->
+  <!-- 1. AUTHENTICATION VIEW                     -->
+  <!-- ========================================== -->
+  <div id="authView" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo-brand">
+          <div class="brand-icon"><i class="fa-solid fa-cube"></i></div>
+          <h1>AcxiomCRM</h1>
+        </div>
+        <p>Enterprise Customer & Sales Lifecycle Platform</p>
+      </div>
+
+      <div class="auth-body">
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">Sign
+            In</button>
+          <button type="button" class="auth-tab-btn" id="tabRegisterBtn"
+            onclick="switchAuthTab('register')">Register</button>
+        </div>
+
+        <!-- Quick Demo Switcher -->
+        <div class="demo-account-pills" id="demoAccountsBox">
+          <p><i class="fa-solid fa-bolt text-amber-500"></i> Instant Role Demo Logins:</p>
+          <div class="demo-btns">
+            <button type="button" class="demo-btn" onclick="quickFillLogin('admin@acxiom.com', 'Admin@123!')">
+              <i class="fa-solid fa-shield-halved"></i> Admin
+            </button>
+            <button type="button" class="demo-btn" onclick="quickFillLogin('manager@acxiom.com', 'Password@123!')">
+              <i class="fa-solid fa-briefcase"></i> Manager
+            </button>
+            <button type="button" class="demo-btn" onclick="quickFillLogin('sarah.sales@acxiom.com', 'Password@123!')">
+              <i class="fa-solid fa-user-tie"></i> Sales Executive
+            </button>
+          </div>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)" novalidate>
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label for="loginEmail">Email Address <span class="required-star">*</span></label>
+            <input type="email" id="loginEmail" class="form-control" placeholder="user@example.com" required>
+            <div class="invalid-feedback">Enter a valid email address.</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="loginPassword">Password <span class="required-star">*</span></label>
+            <input type="password" id="loginPassword" class="form-control" placeholder="Enter secure password" required>
+            <div class="invalid-feedback">Password is required.</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 10px;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In to CRM
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm" onsubmit="handleRegisterSubmit(event)" style="display: none;" novalidate>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="regName">Full Name <span class="required-star">*</span></label>
+            <input type="text" id="regName" class="form-control" placeholder="e.g. John Doe" required>
+            <div class="invalid-feedback">Name is required.</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="regEmail">Work Email <span class="required-star">*</span></label>
+            <input type="email" id="regEmail" class="form-control" placeholder="user@company.com" required>
+            <div class="invalid-feedback">Enter a valid email address.</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="regRole">Role Assignment</label>
+            <select id="regRole" class="form-control">
+              <option value="SalesExecutive">Sales Executive</option>
+              <option value="Manager">Manager</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="regPassword">Password (Policy Enforced) <span class="required-star">*</span></label>
+            <input type="password" id="regPassword" class="form-control"
+              placeholder="Min 8 chars, 1 upper, 1 lower, 1 digit, 1 special" required>
+            <div class="invalid-feedback">Password must be at least 8 chars with uppercase, lowercase, number, and
+              symbol.</div>
+            <div class="form-help">Enforces standard enterprise complexity policy.</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 10px;">
+            <i class="fa-solid fa-user-plus"></i> Create Enterprise Account
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 2. MAIN APPLICATION SHELL                  -->
+  <!-- ========================================== -->
+  <div id="appShell" class="app-container" style="display: none;">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon"><i class="fa-solid fa-cube"></i></div>
+        <span class="brand-title">AcxiomCRM</span>
+        <span class="brand-badge">Enterprise</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Operations</div>
+        <a class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+          <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
+          <span>Dashboard</span>
+        </a>
+
+        <a class="nav-item" data-view="customers" onclick="switchView('customers')">
+          <span class="nav-icon"><i class="fa-solid fa-building-user"></i></span>
+          <span>Customers</span>
+          <span class="nav-badge" id="badgeCustomerCount">0</span>
+        </a>
+
+        <a class="nav-item" data-view="leads" onclick="switchView('leads')">
+          <span class="nav-icon"><i class="fa-solid fa-filter"></i></span>
+          <span>Lead Management</span>
+          <span class="nav-badge" id="badgeLeadCount">0</span>
+        </a>
+
+        <a class="nav-item" data-view="opportunities" onclick="switchView('opportunities')">
+          <span class="nav-icon"><i class="fa-solid fa-handshake"></i></span>
+          <span>Opportunities</span>
+        </a>
+
+        <a class="nav-item" data-view="followups" onclick="switchView('followups')">
+          <span class="nav-icon"><i class="fa-solid fa-calendar-check"></i></span>
+          <span>Follow-Up</span>
+          <span class="nav-badge" id="badgeFollowUpCount" style="background: rgba(239, 68, 68, 0.4);">0</span>
+        </a>
+
+        <a class="nav-item" data-view="activities" onclick="switchView('activities')">
+          <span class="nav-icon"><i class="fa-solid fa-list-check"></i></span>
+          <span>Activity Log</span>
+        </a>
+
+        <div class="nav-section-title">Analytics & Governance</div>
+        <a class="nav-item" data-view="reports" onclick="switchView('reports')">
+          <span class="nav-icon"><i class="fa-solid fa-file-invoice"></i></span>
+          <span>Reports</span>
+        </a>
+
+        <!-- Admin Only Navigation Items -->
+        <div id="adminNavGroup">
+          <a class="nav-item" data-view="users" onclick="switchView('users')">
+            <span class="nav-icon"><i class="fa-solid fa-users-gear"></i></span>
+            <span>User & Roles</span>
+          </a>
+
+          <a class="nav-item" data-view="audit" onclick="switchView('audit')">
+            <span class="nav-icon"><i class="fa-solid fa-shield-virus"></i></span>
+            <span>Audit Log</span>
+          </a>
+        </div>
+
+        <div class="nav-section-title">Verification & Testing</div>
+        <a class="nav-item" data-view="tester" onclick="switchView('tester')">
+          <span class="nav-icon"><i class="fa-solid fa-vial-circle-check"></i></span>
+          <span>Compliance Tester</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <div class="user-avatar" id="sidebarAvatar">A</div>
+          <div class="user-meta">
+            <div class="user-name" id="sidebarUserName">User</div>
+            <div class="user-role-badge" id="sidebarUserRole">Role</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="padding: 4px 6px;" title="Logout" onclick="handleLogout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper">
+
+      <!-- Top Navigation Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="page-breadcrumb">
+            <span style="color: var(--neutral-400);">AcxiomCRM</span>
+            <i class="fa-solid fa-chevron-right" style="font-size: 11px; color: var(--neutral-400);"></i>
+            <span id="breadcrumbCurrent">Dashboard</span>
+          </div>
+
+          <div class="topbar-search">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="globalSearchInput" placeholder="Global search CRM..."
+              oninput="handleGlobalSearch(this.value)">
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Quick Role Switcher for instant testing -->
+          <div class="role-switcher">
+            <label><i class="fa-solid fa-user-shield"></i> Switch Role:</label>
+            <select id="quickRoleSelect" onchange="handleRoleSwitch(this.value)">
+              <option value="Admin">Admin (Full Access)</option>
+              <option value="Manager">Manager (Team Scope)</option>
+              <option value="SalesExecutive">Sales Executive (Assigned)</option>
+            </select>
+          </div>
+
+          <button class="btn btn-secondary btn-sm" onclick="refreshCurrentView()" title="Refresh Data">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Page Body -->
+      <section class="content-body">
+
+        <!-- ============================================== -->
+        <!-- VIEW: DASHBOARD                                -->
+        <!-- ============================================== -->
+        <div id="view-dashboard" class="page-view">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>Executive CRM Dashboard</h2>
+              <p>Key sales metrics, deal pipeline conversion, and operational health</p>
+            </div>
+            <div class="header-actions">
+              <select id="dashboardDateFilter" class="form-control" style="width: 160px;"
+                onchange="loadDashboardData()">
+                <option value="All">All Time</option>
+                <option value="Today">Today</option>
+                <option value="Week">This Week</option>
+                <option value="Month">This Month</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Mandatory KPI Grid (Section 17.11) -->
+          <div class="kpi-grid">
+            <div class="kpi-card accent-primary">
+              <div class="kpi-header">
+                <span class="kpi-label">Total Customers</span>
+                <div class="kpi-icon"><i class="fa-solid fa-building"></i></div>
+              </div>
+              <div class="kpi-value" id="kpiTotalCustomers">0</div>
+              <div class="kpi-subtext"><i class="fa-solid fa-circle-check text-green-500"></i> Active accounts in scope
+              </div>
+            </div>
+
+            <div class="kpi-card accent-primary">
+              <div class="kpi-header">
+                <span class="kpi-label">Total Leads</span>
+                <div class="kpi-icon"><i class="fa-solid fa-filter"></i></div>
+              </div>
+              <div class="kpi-value" id="kpiTotalLeads">0</div>
+              <div class="kpi-subtext" id="kpiOpenLeadsSub">0 open / active leads</div>
+            </div>
+
+            <div class="kpi-card accent-warning">
+              <div class="kpi-header">
+                <span class="kpi-label">Open Opportunities</span>
+                <div class="kpi-icon"><i class="fa-solid fa-business-time"></i></div>
+              </div>
+              <div class="kpi-value" id="kpiOpenOpportunities">0</div>
+              <div class="kpi-subtext" id="kpiTotalOpportunitiesSub">out of 0 total deals</div>
+            </div>
+
+            <div class="kpi-card accent-success">
+              <div class="kpi-header">
+                <span class="kpi-label">Won Opportunities</span>
+                <div class="kpi-icon"><i class="fa-solid fa-trophy"></i></div>
+              </div>
+              <div class="kpi-value" id="kpiWonOpportunities">0</div>
+              <div class="kpi-subtext" id="kpiWonRevenueSub">₹0 closed revenue</div>
+            </div>
+
+            <div class="kpi-card accent-danger">
+              <div class="kpi-header">
+                <span class="kpi-label">Lost Opportunities</span>
+                <div class="kpi-icon"><i class="fa-solid fa-ban"></i></div>
+              </div>
+              <div class="kpi-value" id="kpiLostOpportunities">0</div>
+              <div class="kpi-subtext"><i class="fa-solid fa-arrow-trend-down"></i> Deal drop-offs</div>
+            </div>
+
+            <div class="kpi-card accent-primary">
+              <div class="kpi-header">
+                <span class="kpi-label">Total Pipeline Value</span>
+                <div class="kpi-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+              </div>
+              <div class="kpi-value" id="kpiPipelineValue">₹0</div>
+              <div class="kpi-subtext" id="kpiWeightedPipelineSub">Weighted: ₹0</div>
+            </div>
+          </div>
+
+          <!-- Section 17.12 Dashboard Charts - Chart.js -->
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3><i class="fa-solid fa-chart-column text-blue-600"></i> Opportunity Pipeline by Stage</h3>
+                <span class="badge badge-proposal">Stage-wise Volume</span>
+              </div>
+              <div class="chart-canvas-container">
+                <canvas id="pipelineChart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3><i class="fa-solid fa-chart-pie text-emerald-600"></i> Lead Status Distribution</h3>
+                <span class="badge badge-new">Conversion Funnel</span>
+              </div>
+              <div class="chart-canvas-container">
+                <canvas id="leadStatusChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Sales Trend Chart -->
+          <div class="chart-card" style="margin-bottom: 24px;">
+            <div class="chart-header">
+              <h3><i class="fa-solid fa-chart-line text-indigo-600"></i> Monthly Sales & Outcome Performance Trend</h3>
+              <span class="badge badge-active">Actual vs Pipeline</span>
+            </div>
+            <div class="chart-canvas-container">
+              <canvas id="monthlySalesChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: CUSTOMERS                                -->
+        <!-- ============================================== -->
+        <div id="view-customers" class="page-view" style="display: none;">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>Customer Management</h2>
+              <p>Master business customer records, directory, and interaction history</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-primary" onclick="openCreateCustomerModal()">
+                <i class="fa-solid fa-plus"></i> New Customer
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-group">
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass icon"></i>
+                <input type="text" id="customerSearch" placeholder="Search by name, email, phone, company..."
+                  oninput="loadCustomers()">
+              </div>
+              <select id="customerStatusFilter" class="form-control" style="width: 140px;" onchange="loadCustomers()">
+                <option value="All">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Prospect">Prospect</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-secondary btn-sm" onclick="exportData('customers')">
+                <i class="fa-solid fa-download"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Customer Code</th>
+                    <th>Customer Name</th>
+                    <th>Company</th>
+                    <th>Email Address</th>
+                    <th>Phone</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="customersTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: LEADS                                    -->
+        <!-- ============================================== -->
+        <div id="view-leads" class="page-view" style="display: none;">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>Lead Management</h2>
+              <p>Capture, qualify, assign, and convert prospective leads to customers</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-primary" onclick="openCreateLeadModal()">
+                <i class="fa-solid fa-plus"></i> Capture New Lead
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-group">
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass icon"></i>
+                <input type="text" id="leadSearch" placeholder="Search by lead name, company, email..."
+                  oninput="loadLeads()">
+              </div>
+              <select id="leadStatusFilter" class="form-control" style="width: 140px;" onchange="loadLeads()">
+                <option value="All">All Statuses</option>
+                <option value="New">New</option>
+                <option value="Contacted">Contacted</option>
+                <option value="Qualified">Qualified</option>
+                <option value="Converted">Converted</option>
+                <option value="Lost">Lost</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-secondary btn-sm" onclick="exportData('leads')">
+                <i class="fa-solid fa-download"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Lead Code</th>
+                    <th>Lead Name</th>
+                    <th>Company</th>
+                    <th>Source</th>
+                    <th>Expected Value</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="leadsTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: OPPORTUNITIES                            -->
+        <!-- ============================================== -->
+        <div id="view-opportunities" class="page-view" style="display: none;">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>Opportunity Management</h2>
+              <p>Sales deal pipeline tracking, probability weighting, and contract milestones</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-primary" onclick="openCreateOpportunityModal()">
+                <i class="fa-solid fa-plus"></i> New Opportunity
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-group">
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass icon"></i>
+                <input type="text" id="opportunitySearch" placeholder="Search deals by name, customer..."
+                  oninput="loadOpportunities()">
+              </div>
+              <select id="opportunityStageFilter" class="form-control" style="width: 150px;"
+                onchange="loadOpportunities()">
+                <option value="All">All Stages</option>
+                <option value="Qualification">Qualification</option>
+                <option value="Proposal">Proposal</option>
+                <option value="Negotiation">Negotiation</option>
+                <option value="Won">Won</option>
+                <option value="Lost">Lost</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-secondary btn-sm" onclick="exportData('opportunities')">
+                <i class="fa-solid fa-download"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Opportunity Name</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Probability</th>
+                    <th>Weighted Value</th>
+                    <th>Expected Close</th>
+                    <th>Stage</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="opportunitiesTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: FOLLOW-UPS                               -->
+        <!-- ============================================== -->
+        <div id="view-followups" class="page-view" style="display: none;">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>Follow-Up Management</h2>
+              <p>Scheduled touchpoints, client commitments, and pending activities</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-primary" onclick="openCreateFollowUpModal()">
+                <i class="fa-solid fa-calendar-plus"></i> Schedule Follow-Up
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-group">
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass icon"></i>
+                <input type="text" id="followUpSearch" placeholder="Search follow-ups..." oninput="loadFollowUps()">
+              </div>
+              <select id="followUpStatusFilter" class="form-control" style="width: 140px;" onchange="loadFollowUps()">
+                <option value="All">All Statuses</option>
+                <option value="Planned">Planned</option>
+                <option value="Completed">Completed</option>
+                <option value="Missed">Missed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Related To</th>
+                    <th>Subject / Remarks</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="followUpsTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: ACTIVITIES                               -->
+        <!-- ============================================== -->
+        <div id="view-activities" class="page-view" style="display: none;">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>Activity Management</h2>
+              <p>Complete historical log of phone calls, meetings, client emails, and tasks</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-primary" onclick="openCreateActivityModal()">
+                <i class="fa-solid fa-plus"></i> Log Activity
+              </button>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Activity Type</th>
+                    <th>Subject</th>
+                    <th>Related Party</th>
+                    <th>Logged By</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="activitiesTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: REPORTS                                  -->
+        <!-- ============================================== -->
+        <div id="view-reports" class="page-view" style="display: none;">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>Enterprise CRM Reports</h2>
+              <p>Operational, pipeline, conversion, and user activity intelligence</p>
+            </div>
+            <div class="header-actions">
+              <select id="reportSelector" class="form-control" style="width: 220px;"
+                onchange="loadSelectedReport(this.value)">
+                <option value="pipeline">Pipeline Report</option>
+                <option value="conversion">Conversion & Win Rate</option>
+                <option value="activity">User Activity Report</option>
+                <option value="customer">Customer Master Report</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" onclick="exportCurrentReport()">
+                <i class="fa-solid fa-file-export"></i> Export Report
+              </button>
+            </div>
+          </div>
+
+          <div id="reportContainer">
+            <!-- Dynamically populated report content -->
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: USERS & ROLES (Admin Only)               -->
+        <!-- ============================================== -->
+        <div id="view-users" class="page-view" style="display: none;">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>User & Role Management</h2>
+              <p>Enterprise identity governance, role-based access, and account lockout administration</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-primary" onclick="openCreateUserModal()">
+                <i class="fa-solid fa-user-shield"></i> Provision User
+              </button>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Full Name</th>
+                    <th>Work Email</th>
+                    <th>Assigned Role</th>
+                    <th>Account Status</th>
+                    <th>Lockout State</th>
+                    <th>Failed Attempts</th>
+                    <th style="text-align: right;">Admin Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: AUDIT LOG (Admin & Manager)             -->
+        <!-- ============================================== -->
+        <div id="view-audit" class="page-view" style="display: none;">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>Security & Business Audit Trail</h2>
+              <p>Append-only immutable record of logins, creations, updates, deletions, and security events</p>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-group">
+              <select id="auditModuleFilter" class="form-control" style="width: 150px;" onchange="loadAuditLogs()">
+                <option value="">All Modules</option>
+                <option value="Authentication">Authentication</option>
+                <option value="Customer">Customer</option>
+                <option value="Lead">Lead</option>
+                <option value="Opportunity">Opportunity</option>
+                <option value="FollowUp">FollowUp</option>
+                <option value="User Management">User Management</option>
+              </select>
+
+              <select id="auditActionFilter" class="form-control" style="width: 140px;" onchange="loadAuditLogs()">
+                <option value="">All Actions</option>
+                <option value="Login">Login</option>
+                <option value="Failed Login">Failed Login</option>
+                <option value="Create">Create</option>
+                <option value="Update">Update</option>
+                <option value="Delete">Delete</option>
+                <option value="Security">Security</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-secondary btn-sm" onclick="exportData('audit')">
+                <i class="fa-solid fa-download"></i> Export Audit Log
+              </button>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Module</th>
+                    <th>IP Address</th>
+                    <th>Details & Delta</th>
+                  </tr>
+                </thead>
+                <tbody id="auditTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- VIEW: COMPLIANCE & ACCEPTANCE TESTER           -->
+        <!-- ============================================== -->
+        <div id="view-tester" class="page-view" style="display: none;">
+          <div class="page-header-row">
+            <div class="page-title-group">
+              <h2>Section 17.19 Acceptance & Validation Test Console</h2>
+              <p>Interactive verification harness testing server-side enforcement, bypass rejection, and security
+                boundaries</p>
+            </div>
+            <div>
+              <button class="btn btn-danger btn-sm" onclick="resetDemoData()">
+                <i class="fa-solid fa-arrow-rotate-left"></i> Reset Demo Database
+              </button>
+            </div>
+          </div>
+
+          <div class="api-tester-card">
+            <h3 style="font-size: 15px; margin-bottom: 8px;">Run Automated Final Acceptance Test Suite</h3>
+            <p style="font-size: 12px; color: var(--neutral-600); margin-bottom: 16px;">
+              This test harness programmatically fires the exact test cases specified in the project acceptance criteria
+              (Section 17.19).
+            </p>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="runAutomatedTests()">
+                <i class="fa-solid fa-play"></i> Execute All Acceptance Tests
+              </button>
+              <button class="btn btn-secondary" onclick="testInvalidOpportunityBypass()">
+                <i class="fa-solid fa-bug"></i> Test Server-Side Validation Bypass
+              </button>
+              <button class="btn btn-secondary" onclick="testAccountLockout()">
+                <i class="fa-solid fa-lock"></i> Test 5 Failed Login Lockout
+              </button>
+            </div>
+
+            <div id="testResultsBox" style="display: none;">
+              <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Execution Log & Status Output:</h4>
+              <div class="json-display" id="testLogDisplay" style="height: 320px; max-height: 400px;"></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODALS                                     -->
+  <!-- ========================================== -->
+
+  <!-- Customer Modal (Create & Edit) -->
+  <div id="customerModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="customerModalTitle">New Customer Master</h3>
+        <button class="modal-close" onclick="closeModal('customerModal')">&times;</button>
+      </div>
+      <form id="customerForm" onsubmit="handleCustomerSubmit(event)" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="custFormId">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label for="custName">Customer Name <span class="required-star">*</span></label>
+              <input type="text" id="custName" class="form-control" placeholder="Company or Individual Name" required>
+              <div class="invalid-feedback">Customer Name is required.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="custEmail">Email Address <span class="required-star">*</span></label>
+              <input type="email" id="custEmail" class="form-control" placeholder="client@example.com" required>
+              <div class="invalid-feedback">Enter a valid email address.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="custPhone">Phone Number (10 Digits) <span class="required-star">*</span></label>
+              <input type="tel" id="custPhone" class="form-control" placeholder="9876543210" maxlength="10" required>
+              <div class="invalid-feedback">Enter a valid 10-digit phone number.</div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="custCompany">Company Name</label>
+              <input type="text" id="custCompany" class="form-control" placeholder="Organization name">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="custAddress">Address</label>
+              <input type="text" id="custAddress" class="form-control" placeholder="Street Address, Suite / Flat">
+            </div>
+
+            <div class="form-group">
+              <label for="custCity">City</label>
+              <input type="text" id="custCity" class="form-control" placeholder="City">
+            </div>
+
+            <div class="form-group">
+              <label for="custState">State</label>
+              <input type="text" id="custState" class="form-control" placeholder="State">
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="custStatus">Account Status</label>
+              <select id="custStatus" class="form-control">
+                <option value="Active">Active</option>
+                <option value="Prospect">Prospect</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('customerModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveCustBtn">Save Customer Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Customer Details Modal -->
+  <div id="customerDetailsModal" class="modal-overlay">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3 id="custDetailTitle">Customer Details</h3>
+        <button class="modal-close" onclick="closeModal('customerDetailsModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="customerDetailsContent">
+        <!-- Rendered via JS -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('customerDetailsModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lead Modal (Create & Edit) -->
+  <div id="leadModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="leadModalTitle">Capture New Lead</h3>
+        <button class="modal-close" onclick="closeModal('leadModal')">&times;</button>
+      </div>
+      <form id="leadForm" onsubmit="handleLeadSubmit(event)" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="leadFormId">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label for="leadName">Lead Name <span class="required-star">*</span></label>
+              <input type="text" id="leadName" class="form-control" placeholder="Contact Person Name" required>
+              <div class="invalid-feedback">Lead name is mandatory.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="leadEmail">Email Address</label>
+              <input type="email" id="leadEmail" class="form-control" placeholder="lead@company.com">
+              <div class="invalid-feedback">Enter a valid email address.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="leadPhone">Phone Number</label>
+              <input type="tel" id="leadPhone" class="form-control" placeholder="9876543210" maxlength="10">
+              <div class="invalid-feedback">Enter a valid phone number.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="leadCompany">Company Name</label>
+              <input type="text" id="leadCompany" class="form-control" placeholder="Target Organization">
+            </div>
+
+            <div class="form-group">
+              <label for="leadSource">Lead Source</label>
+              <select id="leadSource" class="form-control">
+                <option value="Website Inquiry">Website Inquiry</option>
+                <option value="LinkedIn Campaign">LinkedIn Campaign</option>
+                <option value="Referral">Referral</option>
+                <option value="Cold Outreach">Cold Outreach</option>
+                <option value="Trade Show">Trade Show</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="leadExpectedValue">Expected Value (₹)</label>
+              <input type="number" id="leadExpectedValue" class="form-control" placeholder="500000" min="0">
+              <div class="invalid-feedback">Expected value must be a valid positive number.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="leadPriority">Priority</label>
+              <select id="leadPriority" class="form-control">
+                <option value="High">High</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="leadStatus">Workflow Status</label>
+              <select id="leadStatus" class="form-control">
+                <option value="New">New</option>
+                <option value="Contacted">Contacted</option>
+                <option value="Qualified">Qualified</option>
+                <option value="Unqualified">Unqualified</option>
+                <option value="Converted">Converted</option>
+                <option value="Lost">Lost</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('leadModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveLeadBtn">Save Lead</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Convert Lead Modal -->
+  <div id="convertLeadModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Convert Qualified Lead</h3>
+        <button class="modal-close" onclick="closeModal('convertLeadModal')">&times;</button>
+      </div>
+      <form id="convertLeadForm" onsubmit="handleConvertLeadSubmit(event)">
+        <div class="modal-body">
+          <input type="hidden" id="convertLeadId">
+          <div
+            style="background: var(--neutral-100); padding: 12px; border-radius: var(--radius); margin-bottom: 16px;">
+            <p style="font-size: 13px; font-weight: 600;" id="convertLeadNotice">Converting Lead: Lead Name</p>
+            <p style="font-size: 12px; color: var(--neutral-600);">This will automatically establish a Customer master
+              record and transition the lead status to 'Converted'.</p>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="convertCreateOppCheck" checked onchange="toggleConvertOppFields(this.checked)">
+              <span style="font-size: 13px; font-weight: 600;">Also establish an active sales Opportunity</span>
+            </label>
+          </div>
+
+          <div id="convertOppFieldsGroup">
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="convertOppAmount">Opportunity Amount (₹) <span class="required-star">*</span></label>
+              <input type="number" id="convertOppAmount" class="form-control" value="500000" min="1">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="convertOppCloseDate">Expected Close Date <span class="required-star">*</span></label>
+              <input type="date" id="convertOppCloseDate" class="form-control">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('convertLeadModal')">Cancel</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fa-solid fa-arrows-spin"></i> Confirm Lead Conversion
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Opportunity Modal (Create & Edit) -->
+  <div id="opportunityModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="opportunityModalTitle">New Sales Opportunity</h3>
+        <button class="modal-close" onclick="closeModal('opportunityModal')">&times;</button>
+      </div>
+      <form id="opportunityForm" onsubmit="handleOpportunitySubmit(event)" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="oppFormId">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label for="oppName">Opportunity Name <span class="required-star">*</span></label>
+              <input type="text" id="oppName" class="form-control" placeholder="Deal / Project Name" required>
+              <div class="invalid-feedback">Opportunity Name is required.</div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="oppCustomerId">Customer Account <span class="required-star">*</span></label>
+              <select id="oppCustomerId" class="form-control" required>
+                <!-- Populated via JS -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="oppAmount">Amount (₹) <span class="required-star">*</span></label>
+              <input type="number" id="oppAmount" class="form-control" placeholder="Greater than 0" min="1" step="any"
+                required>
+              <div class="invalid-feedback">Opportunity Amount must be greater than 0.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="oppProbability">Win Probability (0-100%) <span class="required-star">*</span></label>
+              <input type="number" id="oppProbability" class="form-control" placeholder="0 to 100" min="0" max="100"
+                required>
+              <div class="invalid-feedback">Probability must be between 0 and 100.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="oppStage">Pipeline Stage</label>
+              <select id="oppStage" class="form-control">
+                <option value="Qualification">Qualification</option>
+                <option value="Proposal">Proposal</option>
+                <option value="Negotiation">Negotiation</option>
+                <option value="Won">Won</option>
+                <option value="Lost">Lost</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="oppCloseDate">Expected Close Date <span class="required-star">*</span></label>
+              <input type="date" id="oppCloseDate" class="form-control" required>
+              <div class="invalid-feedback">Expected Close Date cannot be in the past.</div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="oppNotes">Commercial Notes / Terms</label>
+              <textarea id="oppNotes" class="form-control" rows="2"
+                placeholder="Key deliverables, contractual expectations..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('opportunityModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveOppBtn">Save Opportunity</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Follow-Up Modal -->
+  <div id="followUpModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="followUpModalTitle">Schedule Follow-Up</h3>
+        <button class="modal-close" onclick="closeModal('followUpModal')">&times;</button>
+      </div>
+      <form id="followUpForm" onsubmit="handleFollowUpSubmit(event)" novalidate>
+        <div class="modal-body">
+          <input type="hidden" id="followUpFormId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="flwDate">Follow-Up Date <span class="required-star">*</span></label>
+              <input type="date" id="flwDate" class="form-control" required>
+              <div class="invalid-feedback">Follow-up date cannot be earlier than today.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="flwType">Communication Type</label>
+              <select id="flwType" class="form-control">
+                <option value="Call">Phone Call</option>
+                <option value="Meeting">Executive Meeting</option>
+                <option value="Email">Email Follow-Up</option>
+                <option value="Visit">On-Site Visit</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="flwCustomerId">Target Customer</label>
+              <select id="flwCustomerId" class="form-control">
+                <!-- Populated via JS -->
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="flwRemarks">Subject / Remarks <span class="required-star">*</span></label>
+              <textarea id="flwRemarks" class="form-control" rows="2" placeholder="Meeting agenda, discussion points..."
+                required></textarea>
+              <div class="invalid-feedback">Remarks are required.</div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="flwStatus">Status</label>
+              <select id="flwStatus" class="form-control">
+                <option value="Planned">Planned</option>
+                <option value="Completed">Completed</option>
+                <option value="Missed">Missed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('followUpModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Follow-Up</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Activity Modal -->
+  <div id="activityModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Log Activity Touchpoint</h3>
+        <button class="modal-close" onclick="closeModal('activityModal')">&times;</button>
+      </div>
+      <form id="activityForm" onsubmit="handleActivitySubmit(event)" novalidate>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="actType">Activity Channel</label>
+              <select id="actType" class="form-control">
+                <option value="Call">Call</option>
+                <option value="Meeting">Meeting</option>
+                <option value="Email">Email</option>
+                <option value="Task">Task</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="actCustomer">Customer</label>
+              <select id="actCustomer" class="form-control">
+                <!-- Populated via JS -->
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="actSubject">Subject <span class="required-star">*</span></label>
+              <input type="text" id="actSubject" class="form-control" placeholder="e.g. Contract Pricing Review Call"
+                required>
+              <div class="invalid-feedback">Subject is required.</div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="actDescription">Detailed Notes / Minutes</label>
+              <textarea id="actDescription" class="form-control" rows="3"
+                placeholder="Key outcomes and next steps..."></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('activityModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Log Activity</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Provision User Modal (Admin) -->
+  <div id="userModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Provision New Enterprise User</h3>
+        <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
+      </div>
+      <form id="userForm" onsubmit="handleUserSubmit(event)" novalidate>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-2">
+              <label for="usrName">Full Name <span class="required-star">*</span></label>
+              <input type="text" id="usrName" class="form-control" placeholder="Employee Name" required>
+              <div class="invalid-feedback">Name is required.</div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="usrEmail">Corporate Email <span class="required-star">*</span></label>
+              <input type="email" id="usrEmail" class="form-control" placeholder="colleague@acxiom.com" required>
+              <div class="invalid-feedback">Enter a valid email address.</div>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="usrRole">Role Assignment</label>
+              <select id="usrRole" class="form-control">
+                <option value="SalesExecutive">Sales Executive</option>
+                <option value="Manager">Manager</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-2">
+              <label for="usrPassword">Password (Policy Enforced) <span class="required-star">*</span></label>
+              <input type="password" id="usrPassword" class="form-control"
+                placeholder="Min 8 chars, 1 upper, 1 lower, 1 digit, 1 special" required>
+              <div class="invalid-feedback">Password does not satisfy policy.</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create User Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
