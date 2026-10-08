@@ -104,16 +104,15 @@ async function runTests() {
   console.log(`[Scenario 11] Admin User Administration Access: Status ${s11.status} (Expected 200) -> ${s11.status === 200 ? 'PASS ✅' : 'FAIL ❌'}`);
 
   // Scenario 12: Create CRM record generates Audit Log
-  const randPhone = `90${Math.floor(10000000 + Math.random() * 90000000)}`;
   const s12Cust = await request('POST', '/api/customers', {
     CustomerName: 'New Verified Enterprise Corp',
     Email: `test_${Date.now()}@verified.com`,
-    Phone: randPhone,
+    Phone: '9988776655',
     CompanyName: 'Verified Enterprise',
     Status: 'Active'
   }, adminToken);
   const s12Audit = await request('GET', '/api/audit-logs', null, adminToken);
-  const auditHit = s12Cust.body && s12Cust.body.data ? s12Audit.body.data.find(a => a.RecordId === s12Cust.body.data.CustomerId) : null;
+  const auditHit = s12Audit.body.data.find(a => a.RecordId === s12Cust.body.data.CustomerId);
   console.log(`[Scenario 12] Audit Trail Entry Generated on Record Creation: ${Boolean(auditHit) ? 'PASS ✅' : 'FAIL ❌'}`);
 
   // Scenario 13: Call /api/customers -> JSON response
